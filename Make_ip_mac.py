@@ -12,28 +12,33 @@ def get_default_gateway_linux():
 
             return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
 
+# Get the default gateway IP address
 gateway = get_default_gateway_linux()
 
-target_ip = gateway + "/24"
 # IP Address for the destination
-# create ARP packet
+target_ip = gateway + "/24"
+
+# Create ARP packet
 arp = ARP(pdst=target_ip)
-# create the Ether broadcast packet
+
+# Create the Ether broadcast packet
 # ff:ff:ff:ff:ff:ff MAC address indicates broadcasting
 ether = Ether(dst="ff:ff:ff:ff:ff:ff")
-# stack them
+
+# Stack them
 packet = ether/arp
 
+# Send packet and get the result
 result = srp(packet, timeout=3, verbose=0)[0]
 
-# a list of clients, we will fill this in the upcoming loop
+# A list of clients, we will fill this in the upcoming loop
 clients = []
 
+# For each response, append IP and MAC address to `clients` list
 for sent, received in result:
-    # for each response, append ip and mac address to `clients` list
     clients.append({'ip': received.psrc, 'mac': received.hwsrc})
 
-# print clients
+# Print clients
 print("Available devices in the network:")
 print("IP" + " "*18+"MAC")
 for client in clients:
